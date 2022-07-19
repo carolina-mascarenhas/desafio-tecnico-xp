@@ -5,6 +5,17 @@ const getAll = () => {
   return allAssets;
 };
 
+const getById = (id) => {
+  const assetById = Asset.findAll({
+    attributes: { exclude: ['asset'] },
+    where: {
+      id,
+    },
+  });
+  return assetById;
+};
+
 module.exports = {
   getAll,
+  getById,
 };
