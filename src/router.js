@@ -1,8 +1,8 @@
 const express = require('express');
-const assetsController = require('./controllers/assetsController');
+const clientsController = require('./controllers/clientsController');
 
 const routes = express.Router();
 
-routes.use('/assets', assetsController);
+routes.use('/clients', clientsController);
 
 module.exports = routes;
