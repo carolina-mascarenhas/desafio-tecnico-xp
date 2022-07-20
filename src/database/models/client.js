@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const clientTable = sequelize.define('Client', {
-    id: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
+    clientId: { allowNull: false, autoIncrement: true, primaryKey: true, type: DataTypes.INTEGER },
     name: { type: DataTypes.STRING, allowNull: false, unique: true },
     qtdComprada: { type: DataTypes.INTEGER, allowNull: false },
     qtdVendida: { type: DataTypes.INTEGER, allowNull: false },
