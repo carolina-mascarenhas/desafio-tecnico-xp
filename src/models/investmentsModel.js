@@ -1,13 +1,18 @@
 const connection = require('./connection');
 
-const getAccounts = async (id) => {
-  const [accounts] = await connection.execute('SELECT * FROM Account WHERE accountId = ?', [id]);
-  return accounts;
+const getAccount = async (id) => {
+  const [account] = await connection.execute('SELECT * FROM Account WHERE accountId = ?', [id]);
+  return account;
 };
 
-const getAssets = async (id) => {
-  const [assets] = await connection.execute('SELECT * FROM Assets WHERE assetId = ?', [id]);
-  return assets;
+const getAsset = async (id) => {
+  const [asset] = await connection.execute('SELECT * FROM Assets WHERE assetId = ?', [id]);
+  return asset;
+};
+
+const getClient = async (id) => {
+  const [client] = await connection.execute('SELECT * FROM Clients WHERE clientId = ?', [id]);
+  return client;
 };
 
 const createNewOrder = async (accountId, assetId, quantity) => {
@@ -22,15 +27,22 @@ const updateAccount = (balance, id) => {
   connection.execute(query, [balance, id]);
 };
 
-const updateAssets = (quantity, id) => {
+const updateAsset = (quantity, id) => {
   const query = 'UPDATE Assets SET quantity = ? WHERE assetId = ?';
   connection.execute(query, [quantity, id]);
 };
 
+const updateClient = (quantity, id) => {
+  const query = 'UPDATE Clients SET quantity = ? WHERE clientId = ?';
+  connection.execute(query, [quantity, id]);
+};
+
 module.exports = {
-  getAccounts,
-  getAssets,
+  getAccount,
+  getAsset,
+  getClient,
   createNewOrder,
   updateAccount,
-  updateAssets,
+  updateAsset,
+  updateClient,
 };
