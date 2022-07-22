@@ -45,6 +45,11 @@ const updateClientAsset = (quantity, value, clientId, assetId) => {
   connection.execute(query, [quantity, value, clientId, assetId]);
 };
 
+const deleteClientAssets = (clientId, assetId) => {
+  const query = 'DELETE FROM ClientAssets WHERE clientId = ? AND assetId = ?';
+  connection.execute(query, [clientId, assetId]);
+};
+
 module.exports = {
   getAccount,
   getAsset,
@@ -54,4 +59,5 @@ module.exports = {
   updateAccount,
   updateAsset,
   updateClientAsset,
+  deleteClientAssets,
 };
