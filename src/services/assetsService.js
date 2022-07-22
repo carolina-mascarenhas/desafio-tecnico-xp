@@ -20,7 +20,7 @@ const getClientById = async (id) => {
   const clientById = await assetsModel.getClientById(id);
 
   if (clientById.length === 0) {
-    const error = new Error('This client does not exist');
+    const error = new Error('This client does not exist or does not have any assets yet');
     error.status = 404;
     throw (error);
   }
