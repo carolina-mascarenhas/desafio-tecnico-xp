@@ -1,33 +1,45 @@
-/* eslint-disable max-lines-per-function */
 const investmentsModel = require('../models/investmentsModel');
 
-const createNewOrder = async ({ accountId, assetId, quantity }) => {
-  const [account] = await investmentsModel.getAccount(accountId);
+const alterClientAssets = async ({ accountId, assetId, quantity, operation }, account, asset) => {
+  const clientAssets = await investmentsModel.getClientAssets(account.clientId, assetId);
 
-  const [asset] = await investmentsModel.getAsset(assetId);
+  if (clientAssets.length !== 0) {
+    const newQuantity = clientAssets[0].quantity + quantity;
+    const newValue = clientAssets[0].value + (quantity * asset.value);
+    
+    investmentsModel.updateClientAsset(newQuantity, newValue, account.clientId, assetId);
+    return investmentsModel.createNewOrder(accountId, assetId, quantity, operation);
+  }
+  
+  investmentsModel.createClientAssets(account.clientId, assetId, quantity, asset.value * quantity);
 
-  const [client] = await investmentsModel.getClient(account.clientId);
+  return investmentsModel.createNewOrder(accountId, assetId, quantity, operation);
+};
 
-  const newBalance = account.balance - (quantity * asset.value);
-  const newAssetQuantity = asset.quantity - quantity;
-  const newClientQuantity = client.quantity + quantity;
+const createNewOrder = async (body) => {
+  const [account] = await investmentsModel.getAccount(body.accountId);
+
+  const [asset] = await investmentsModel.getAsset(body.assetId);
+
+  const newBalance = account.balance - (body.quantity * asset.value);
+  const newAssetQuantity = asset.quantity - body.quantity;
 
   if (newBalance < 0) {
-    const error = new Error('Your balance account is not enought');
+    const error = new Error('Your balance account is not enough');
     error.status = 404;
     throw error;
   }
 
   if (newAssetQuantity < 0) {
-    const error = new Error('There are not enought assets available');
+    const error = new Error('There are not enough assets available');
     error.status = 404;
     throw error;
   }
 
-  investmentsModel.updateAccount(newBalance, accountId);
-  investmentsModel.updateAsset(newAssetQuantity, assetId);
-  investmentsModel.updateClient(newClientQuantity, account.clientId);
-  return investmentsModel.createNewOrder(accountId, assetId, quantity);
+  investmentsModel.updateAccount(newBalance, body.accountId);
+  investmentsModel.updateAsset(newAssetQuantity, body.assetId);
+
+  return alterClientAssets(body, account, asset);
 };
 
 module.exports = {

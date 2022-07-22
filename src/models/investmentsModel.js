@@ -10,14 +10,21 @@ const getAsset = async (id) => {
   return asset;
 };
 
-const getClient = async (id) => {
-  const [client] = await connection.execute('SELECT * FROM Clients WHERE clientId = ?', [id]);
-  return client;
+const getClientAssets = async (clientId, assetId) => {
+  const [clientAssets] = await connection.execute(
+    'SELECT * FROM ClientAssets WHERE clientId = ? AND assetId = ?', [clientId, assetId],
+  );
+  return clientAssets;
 };
 
-const createNewOrder = async (accountId, assetId, quantity) => {
-  const query = 'INSERT INTO Orders (accountId, assetId, quantity) VALUES (?, ?, ?)';
-  const [order] = await connection.execute(query, [accountId, assetId, quantity]);
+const createClientAssets = (clientId, assetId, quantity, value) => {
+  const query = 'INSERT INTO ClientAssets (clientId, assetId, quantity, value) VALUES (?, ?, ?, ?)';
+  connection.execute(query, [clientId, assetId, quantity, value]);
+};
+
+const createNewOrder = async (accountId, assetId, quantity, operation) => {
+  const query = 'INSERT INTO Orders (accountId, assetId, quantity, operation) VALUES (?, ?, ?, ?)';
+  const [order] = await connection.execute(query, [accountId, assetId, quantity, operation]);
 
   return order.insertId;
 };
@@ -32,17 +39,19 @@ const updateAsset = (quantity, id) => {
   connection.execute(query, [quantity, id]);
 };
 
-const updateClient = (quantity, id) => {
-  const query = 'UPDATE Clients SET quantity = ? WHERE clientId = ?';
-  connection.execute(query, [quantity, id]);
+const updateClientAsset = (quantity, value, clientId, assetId) => {
+  const query = `UPDATE ClientAssets SET quantity = ?, value = ?
+  WHERE clientId = ? AND assetId = ?`;
+  connection.execute(query, [quantity, value, clientId, assetId]);
 };
 
 module.exports = {
   getAccount,
   getAsset,
-  getClient,
+  getClientAssets,
+  createClientAssets,
   createNewOrder,
   updateAccount,
   updateAsset,
-  updateClient,
+  updateClientAsset,
 };
