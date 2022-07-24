@@ -10,21 +10,13 @@ const getAssetById = async (id) => {
   return assetById;
 };
 
-const getClients = async () => {
-  const query = 'SELECT * FROM ClientAssets';
-  const [clients] = await connection.execute(query);
-  return clients;
-};
-
-const getClientById = async (id) => {
-  const query = 'SELECT * FROM ClientAssets WHERE clientId = ?';
-  const [clientById] = await connection.execute(query, [id]);
-  return clientById;
+const updateAsset = (quantity, id) => {
+  const query = 'UPDATE Assets SET quantity = ? WHERE assetId = ?';
+  connection.execute(query, [quantity, id]);
 };
 
 module.exports = {
   getAssets,
   getAssetById,
-  getClients,
-  getClientById,
+  updateAsset,
 };
