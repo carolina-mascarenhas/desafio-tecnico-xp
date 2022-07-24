@@ -25,7 +25,7 @@ routes.post('/deposit', async (req, res) => {
 });
 
 routes.post('/withdrawal', async (req, res) => {
-  const withdrawal = await accountsService.createSaque(req.body);
+  const withdrawal = await accountsService.createWithdrawal(req.body);
   res.status(201).json({
     message: `Withdrawal of ${req.body.value} successfully made in accountId ${withdrawal}`,
   });
