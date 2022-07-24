@@ -17,9 +17,14 @@ const getAccountByAccountId = async (id) => {
   return byAccountId;
 };
 
-const createDeposit = (deposito, balance, clientId) => {
-  const query = 'UPDATE Account SET deposito = ?, balance = ? WHERE clientId = ?';
-  connection.execute(query, [deposito, balance, clientId]);
+const createDeposit = (deposit, balance, clientId) => {
+  const query = 'UPDATE Account SET deposit = ?, balance = ? WHERE clientId = ?';
+  connection.execute(query, [deposit, balance, clientId]);
+};
+
+const createWithdrawal = (withdrawal, balance, clientId) => {
+  const query = 'UPDATE Account SET withdrawal = ?, balance = ? WHERE clientId = ?';
+  connection.execute(query, [withdrawal, balance, clientId]);
 };
 
 const updateAccount = (balance, id) => {
@@ -32,5 +37,6 @@ module.exports = {
   getAccountByClientId,
   getAccountByAccountId,
   createDeposit,
+  createWithdrawal,
   updateAccount,
 };

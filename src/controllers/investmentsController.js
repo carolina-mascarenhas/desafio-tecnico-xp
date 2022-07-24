@@ -1,7 +1,10 @@
 const express = require('express');
 const investmentsService = require('../services/investmentsService');
+const middlewares = require('../middlewares');
 
 const routes = express.Router();
+
+routes.use(middlewares.investmentsValidation);
 
 routes.post('/buy', async (req, res) => {
   const requestBody = req.body;
