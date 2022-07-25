@@ -23,7 +23,20 @@ O projeto foi desenvolvido em Docker e para rodar a aplicação no container exe
 - Use o comando `docker exec -it desafio_xp bash`
 
 E TCHARAAAAN :tada: :tada: Você está dentro do container!!
+- Rode o comando `npm install` para instalar as dependências e `npm run dev` para iniciar a aplicação e a patir daí te convido a explorar os endpoints da minha API! :eyes:
+
+3. Informações adicionais
+
+- O arquivo com as querys para criar o banco encontra-se no arquivo `DB.sql`
+- O arquivo `.env.example` deve ser renomeado para `.env`e preenchido no campo `JWT_SECRET` como você desejar
 
 ## Instalando Dependências
 
 > Instale as dependências com `npm install`
+
+## Tomadas de Decisão
+
+A API foi desenvolvida utilizando o padrão de arquitetura MSC e partindo do princípio que:
+- Um cliente só pode possuir uma única conta;
+- As compras e vendas são realizadas entre cliente e corretora, em que essa última possui todos os ativos disponiveis para venda, e para quem o cliente realiza sua venda;
+- Vários clientes podem possuir vário ativos e vários ativos podem pertencer a vários clientes.
