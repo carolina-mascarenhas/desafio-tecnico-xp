@@ -1,87 +1,86 @@
-const investmentsModel = require('../models/investmentsModel');
+const accountModel = require('../models/accountsModel');
+const assetModel = require('../models/assetsModel');
+const clientAssetsModel = require('../models/clientAssetsModel');
+const orderModel = require('../models/ordersModel');
+const throwError = require('../utils/throwError');
 
 const alterClientAssets = async ({ accountId, assetId, quantity, operation }, account, asset) => {
-  const clientAssets = await investmentsModel.getClientAssets(account.clientId, assetId);
+  const clientAssets = await clientAssetsModel.getByClientAndAssetId(account[0].clientId, assetId);
 
   if (clientAssets.length !== 0) {
     const newQuantity = clientAssets[0].quantity + quantity;
-    const newValue = clientAssets[0].value + (quantity * asset.value);
+    const newValue = clientAssets[0].value + (quantity * asset[0].value);
     
-    investmentsModel.updateClientAsset(newQuantity, newValue, account.clientId, assetId);
-    return investmentsModel.createNewOrder(accountId, assetId, quantity, operation);
+    clientAssetsModel.updateClientAsset(newQuantity, newValue, account[0].clientId, assetId);
+    return orderModel.createNewOrder(accountId, assetId, quantity, operation);
   }
   
-  investmentsModel.createClientAssets(account.clientId, assetId, quantity, asset.value * quantity);
-
-  return investmentsModel.createNewOrder(accountId, assetId, quantity, operation);
+  clientAssetsModel.createClientAssets(
+    account[0].clientId, assetId, quantity, asset[0].value * quantity,
+  );
+  return orderModel.createNewOrder(accountId, assetId, quantity, operation);
 };
 
 const createNewPurchaseOrder = async (body) => {
-  const [account] = await investmentsModel.getAccount(body.accountId);
+  const account = await accountModel.getAccountByAccountId(body.accountId);
 
-  const [asset] = await investmentsModel.getAsset(body.assetId);
+  if (account.length === 0) return throwError(404, 'This account does not exist');
 
-  const newBalance = account.balance - (body.quantity * asset.value);
-  const newAssetQuantity = asset.quantity - body.quantity;
+  const asset = await assetModel.getAssetById(body.assetId);
 
-  if (newBalance < 0) {
-    const error = new Error('Your balance account is not enough');
-    error.status = 404;
-    throw error;
-  }
+  if (asset.length === 0) return throwError(404, 'This asset does not exist');
 
-  if (newAssetQuantity < 0) {
-    const error = new Error('There are not enough assets available');
-    error.status = 404;
-    throw error;
-  }
+  const newBalance = account[0].balance - (body.quantity * asset[0].value);
+  const newAssetQuantity = asset[0].quantity - body.quantity;
 
-  investmentsModel.updateAccount(newBalance, body.accountId);
-  investmentsModel.updateAsset(newAssetQuantity, body.assetId);
+  if (newBalance < 0) return throwError(404, 'Your balance account is not enough');
+
+  if (newAssetQuantity < 0) return throwError(404, 'There are not enough assets available');
+
+  accountModel.updateAccount(newBalance, body.accountId);
+  assetModel.updateAsset(newAssetQuantity, body.assetId);
 
   return alterClientAssets(body, account, asset);
 };
 
 const alterForSale = async ({ accountId, assetId, quantity, operation }, account, clientAssets) => {
-  const [asset] = await investmentsModel.getAsset(assetId);
+  const [asset] = await assetModel.getAssetById(assetId);
 
-  const newBalance = account.balance + (quantity * asset.value);
+  const newBalance = account[0].balance + (quantity * asset.value);
   const newAssetQuantity = asset.quantity + quantity;
 
-  investmentsModel.updateAccount(newBalance, accountId);
-  investmentsModel.updateAsset(newAssetQuantity, assetId);
+  accountModel.updateAccount(newBalance, accountId);
+  assetModel.updateAsset(newAssetQuantity, assetId);
 
   const newQuantity = clientAssets[0].quantity - quantity;
   const newValue = clientAssets[0].value - (quantity * asset.value);
 
   if (newQuantity === 0) {
-    investmentsModel.deleteClientAssets(account.clientId, assetId);
-    return investmentsModel.createNewOrder(accountId, assetId, quantity, operation);
+    clientAssetsModel.deleteClientAssets(account[0].clientId, assetId);
+    return orderModel.createNewOrder(accountId, assetId, quantity, operation);
   }
 
-  investmentsModel.updateClientAsset(newQuantity, newValue, account.clientId, assetId);
-  return investmentsModel.createNewOrder(accountId, assetId, quantity, operation);
+  clientAssetsModel.updateClientAsset(newQuantity, newValue, account[0].clientId, assetId);
+  return orderModel.createNewOrder(accountId, assetId, quantity, operation);
 };
 
 const createNewSaleOrder = async (body) => {
-  const [account] = await investmentsModel.getAccount(body.accountId);
+  const account = await accountModel.getAccountByAccountId(body.accountId);
 
-  const clientAssets = await investmentsModel.getClientAssets(account.clientId, body.assetId);
+  if (account.length === 0) return throwError(404, 'This account does not exist');
+
+  const clientAssets = await clientAssetsModel.getByClientAndAssetId(
+    account[0].clientId, body.assetId,
+  );
   
   if (clientAssets.length === 0) {
-    const error = new Error('You are not a client or you do not have this asset');
-    error.status = 404;
-    throw error;
+    return throwError(404, 'You are not a client or you do not have this asset');
   }
 
   const myAssetQuantity = clientAssets[0].quantity;
   const newQuantity = myAssetQuantity - body.quantity;
 
-  if (newQuantity < 0) {
-    const error = new Error('You do not have enough assets to sell');
-    error.status = 404;
-    throw error;
-  }
+  if (newQuantity < 0) return throwError(404, 'You do not have enough assets to sell');
 
   return alterForSale(body, account, clientAssets);
 };
